@@ -82,11 +82,18 @@ MAIN=$(git worktree list --porcelain | awk 'NR==1{print substr($0,10)}')
 2. 親がどのブランチにも乗っていないコミットを抱えている
 
    ```bash
-   git -C "$MAIN" branch --contains HEAD
+   git -C "$MAIN" branch --contains HEAD --format='%(refname:short)' | grep -v '^('
    ```
 
    出力が空なら、detached のままコミットされている。
    切り替えると迷子になるので、コミット内容を提示して残すか確認する。
+
+   **`--format` と `grep -v '^('` は必須。** 素の `git branch --contains HEAD` は
+   `(HEAD detached from refs/heads/feat)` という擬似行を返すため、出力が空になることがなく、
+   判定が常に通ってしまう。
+
+   `git -C "$MAIN" status` の1行目でも判定できる。
+   `HEAD detached **at**` ならコミットなし、`HEAD detached **from**` ならコミット済み。
 
 ### Step 4: 切り替える
 
